@@ -8,7 +8,6 @@ class Graph:
         # Initialize the values of all nodes with infinity
         distances = {node: float("inf") for node in self.graph}
         distances[source] = 0  # Set the source value to 0
-
         # Initialize a priority queue
         pq = [(0, source)]
         heapify(pq)
@@ -18,7 +17,6 @@ class Graph:
 
         while pq:  # While the priority queue isn't empty
             current_distance, current_node = heappop(pq)
-
             if current_node in visited:
                 continue
             visited.add(current_node)
@@ -58,7 +56,7 @@ class Graph:
 
     def add_edge(self, node1, node2, weight):
         self.add_node(node1)
-        self.graph[node1][node2] = weight  # Else, add a connection to its neighbor
+        self.graph[node1][node2] = weight
 
     # Add a new node
     def add_node(self, node):
@@ -83,27 +81,5 @@ class Graph:
         if node1 in self.graph and node2 in self.graph[node1]:
             self.graph[node1][node2] = new_weight
 
-
-
-# graph = {
-#    "A": {"B": 3, "C": 3},
-#    "B": {"A": 3, "D": 3.5, "E": 2.8},
-#    "C": {"A": 3, "E": 2.8, "F": 3.5},
-#    "D": {"B": 3.5, "E": 3.1, "G": 10},
-#    "E": {"B": 2.8, "C": 2.8, "D": 3.1, "G": 7},
-#    "F": {"G": 2.5, "C": 3.5},
-#    "G": {"F": 2.5, "E": 7, "D": 10},
-# }
-
-# G = Graph()
-#
-# G.add_edge("A", "E", 3)
-# G.add_edge("A", "C", 2)
-# G.add_edge("B", "C", 3)
-# G.delete_edge("A", "C")
-# G.edit_edge("A", "E", 2)
-#
-# print(G.graph)
-# print(G.shortest_path("B", "F"))
-#
-# exit(0)
+    def __len__(self):
+        return len(self.graph)

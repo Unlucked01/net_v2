@@ -3,8 +3,12 @@ const ctx = canvas.getContext('2d');
 
 const positions = {};
 let draggingNode = {};
-let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
+
+let currentMode = null;
+
+let startNode = '1';
+let stopNode = null;
 
 let shortestPath = [];
 
@@ -17,6 +21,13 @@ function getRandomPosition(maxX, maxY) {
         x: Math.random() * (maxX - padding * 2) + padding,
         y: Math.random() * (maxY - padding * 2) + padding
     };
+}
+
+const logArea = document.getElementById('log');
+
+function logEvent(message) {
+    logArea.value += `${message}\n`;
+    logArea.scrollTop = logArea.scrollHeight;
 }
 
 // Функция для рисования графа
@@ -54,7 +65,6 @@ function drawGraph() {
     // Рисуем узлы
     for (const node in positions) {
         const pos = positions[node];
-
         // Рисуем круг для узла
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 20, 0, 2 * Math.PI);
@@ -73,52 +83,77 @@ function drawGraph() {
     }
 }
 
-// Начальная загрузка графа
-fetch('/get-graph')
-    .then(response => response.json())
-    .then(graphData => {
-        for (const node in graphData) {
-            positions[node] = getRandomPosition(canvas.width, canvas.height);
-        }
-        graph = graphData;
+function fetchGraph(){
+    fetch('/get-graph')
+        .then(response => response.json())
+        .then(graphData => {
+            for (const node in graphData) {
+                if (!positions[node]){
+                    positions[node] = getRandomPosition(canvas.width, canvas.height);
+                }
+            }
+            graph = graphData;
+            console.log(graph);
+            drawGraph();
+            fetchHighlightPath();
+        })
+        .catch(error => console.error('Error fetching graph:', error));
+}
 
-        fetch('/shortest-path?source=A&target=B')
-            .then(response => response.json())
-            .then(data => {
-                shortestPath = data.path;
-                console.log('Shortest path:', shortestPath);
-                // Перерисовываем граф, выделив кратчайший путь
-                drawGraph();
-            });
-    })
-    .catch(error => console.error('Error fetching graph:', error));
+function fetchHighlightPath(){
+    if (startNode === null || stopNode === null) {
+        return
+    }
+    fetch(`/shortest-path?source=${startNode}&target=${stopNode}`)
+        .then(response => response.json())
+        .then(data => {
+            shortestPath = data.path;
+            console.log('Shortest path:', shortestPath);
+            // Перерисовываем граф, выделив кратчайший путь
+            drawGraph();
+        })
+        .catch(error => console.error('Error highlighting graph', startNode, endNode));
+}
 
-// Функция для определения узла, на который кликнули
+
 function getClickedNode(x, y) {
     for (const node in positions) {
         const pos = positions[node];
         const dx = x - pos.x;
         const dy = y - pos.y;
 
-        // Проверяем, находится ли клик внутри радиуса узла
         if (Math.sqrt(dx * dx + dy * dy) < 20) {
             return node;
         }
     }
-    return null; // Если клик не попадает ни на один узел
+    return null;
 }
 
-
-// Обработка события мыши для перетаскивания узлов
-canvas.addEventListener('mousedown', (event) => {
+canvas.addEventListener('click',event => {
     const mouseX = event.offsetX;
     const mouseY = event.offsetY;
 
-    // Получаем узел, по которому кликнули
+    const clickedNode = getClickedNode(mouseX, mouseY);
+
+    switch (currentMode) {
+        case 'pointStart':
+            startNode = clickedNode;
+            fetchHighlightPath();
+            break;
+        case 'pointStop':
+            stopNode = clickedNode;
+            fetchHighlightPath();
+            break;
+    }
+    currentMode = null;
+});
+
+canvas.addEventListener('mousedown', (event) => {
+    const mouseX = event.offsetX;
+    const mouseY = event.offsetY;
     const clickedNode = getClickedNode(mouseX, mouseY);
 
     if (clickedNode) {
-        isDragging = true;
         draggingNode = positions[clickedNode];
         dragOffset.x = mouseX - draggingNode.x;
         dragOffset.y = mouseY - draggingNode.y;
@@ -126,7 +161,7 @@ canvas.addEventListener('mousedown', (event) => {
 });
 
 canvas.addEventListener('mousemove', (event) => {
-    if (draggingNode && isDragging) {
+    if (draggingNode) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
         const pos = draggingNode;
@@ -139,3 +174,11 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('mouseup', () => {
     draggingNode = null;
 });
+
+
+function setMode(mode) {
+    currentMode = mode;
+}
+
+
+window.onload = fetchGraph

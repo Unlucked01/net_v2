@@ -4,17 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graph Visualization</title>
-    <style>
-        canvas {
-            border: 1px solid black;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
 
-<canvas id="canvas" width="700" height="500"></canvas>
+<div id="main-container">
+        <div id="graph-area">
+            <canvas id="canvas" width="700" height="500"></canvas>
+            <div id="context-menu">
+                <ul>
+                    <li id="add-node">Add Node</li>
+                    <li id="add-edge">Add Edge</li>
+                    <li id="remove-node">Remove Vertex</li>
+                    <li id="remove-edge">Remove Edge</li>
+                    <li id="edit-edge">Edit Edge</li>
+                    <li id="point-start">Point start vertex</li>
+                    <li id="point-stop">Point stop vertex</li>
+                </ul>
+            </div>
+        </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+        <div id="matrix-area">
+            <h2>Graph Incidence Matrix</h2>
+            <div id="matrix-container"></div>
+        </div>
+    </div>
+
+    <div id="log-container">
+        <h3>Graph Event Log:</h3>
+        <textarea id="log" rows="10" readonly></textarea>
+    </div>
+
+    <script src="static/script.js"></script>
+    <script src="static/menu.js"></script>
 
 </body>
 </html>
