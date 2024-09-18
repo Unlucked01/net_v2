@@ -69,7 +69,7 @@ class Graph:
             else:
                 node = str(len(self.graph) + 1)
 
-        if node not in self.graph:
+        if node not in self.graph and len(self.graph.keys()) < 10:
             self.graph[node] = {}
             self.positions[node] = self.generate_node_position()
             return True
