@@ -1,5 +1,3 @@
-from heapq import heappop, heappush, heapify
-
 
 class Graph:
     def __init__(self, graph: dict):
@@ -13,6 +11,8 @@ class Graph:
                 self.add_edge(node, neighbor, weight)
 
     def shortest_distances(self, source: str):
+        from heapq import heappop, heappush, heapify
+
         distances = {node: float("inf") for node in self.graph}
         distances[source] = 0
         pq = [(0, source)]
@@ -25,6 +25,8 @@ class Graph:
             if current_node in visited:
                 continue
             visited.add(current_node)
+
+            print(self.graph[current_node].items())
 
             for neighbor, weight in self.graph[current_node].items():
                 tentative_distance = current_distance + weight
@@ -112,24 +114,14 @@ class Graph:
         else:
             raise ValueError(f"Node {node} does not exist in the graph")
 
-    def incident_matrix(self):
-        nodes = list(self.graph.keys())
-        edges = []
-
-        for node_from, neighbors in self.graph.items():
-            for node_to in neighbors:
-                edges.append((node_from, node_to))
-
-        matrix = [[0] * len(nodes) for _ in range(len(edges))]
-
-        for i, (node_from, node_to) in enumerate(edges):
-            from_idx = nodes.index(node_from)
-            to_idx = nodes.index(node_to)
-            matrix[i][from_idx] = 1
-            matrix[i][to_idx] = -1
+    def adjacency_matrix(self):
+        nodes = sorted(self.graph.keys(), key=int)
+        size = len(nodes)
+        matrix = [[0] * size for _ in range(size)]
+        for i, node in enumerate(nodes):
+            matrix[i][i] = 0
+            for neighbor, weight in self.graph[node].items():
+                j = nodes.index(neighbor)
+                matrix[i][j] = weight
 
         return matrix
-
-    def __len__(self):
-        return len(self.graph)
-

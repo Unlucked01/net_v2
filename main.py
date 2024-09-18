@@ -118,6 +118,12 @@ def update_position():
         return jsonify({'error': str(e)}), 400
 
 
+@app.route('/matrix', methods=['GET'])
+def get_adjacency_matrix():
+    matrix = G.adjacency_matrix()
+    return jsonify({'adjacency_matrix': matrix})
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 

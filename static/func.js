@@ -1,4 +1,7 @@
-window.onload = fetchGraph;
+window.onload = function () {
+    fetchGraph();
+    fetchAdjacencyMatrix();
+};
 
 function logEvent(message) {
     logArea.value += `${message}\n`;
@@ -75,6 +78,7 @@ function fetchGraph(){
             positions = graphData.positions;
             console.log(graph);
             drawGraph();
+            fetchAdjacencyMatrix();
             fetchHighlightPath();
         })
         .catch(error => console.error('Error fetching graph:', error));
