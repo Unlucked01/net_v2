@@ -73,8 +73,8 @@ def delete_node():
 
 @app.route('/edge', methods=['DELETE'])
 def delete_edge():
-    node_from = request.json.get('node_from')
-    node_to = request.json.get('node_to')
+    node_from = request.json.get('nodeFrom')
+    node_to = request.json.get('nodeTo')
 
     if node_from not in G.graph or node_to not in G.graph[node_from]:
         return jsonify({'error': f'Edge from {node_from} to {node_to} does not exist'}), 400

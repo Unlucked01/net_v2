@@ -62,10 +62,6 @@ class Graph:
         self.graph[node1][node2] = weight
 
     def add_node(self, node=None):
-        """
-        Добавление нового узла. Если задано `node`, то добавляется узел с этим идентификатором.
-        Если узел не задан, то используется недостающий номер, если он есть.
-        """
         if not node:
             if self.missing_nodes:
                 node = str(min(self.missing_nodes))
@@ -81,9 +77,6 @@ class Graph:
             return False
 
     def delete_node(self, node):
-        """
-        Удаление узла из графа. Номер удаленного узла добавляется в список недостающих номеров.
-        """
         if node in self.graph:
             del self.graph[node]
             del self.positions[node]
@@ -96,10 +89,14 @@ class Graph:
     def delete_edge(self, node1, node2):
         if node1 in self.graph and node2 in self.graph[node1]:
             del self.graph[node1][node2]
+        if node2 in self.graph and node1 in self.graph[node2]:
+            del self.graph[node2][node1]
 
     def edit_edge(self, node1, node2, new_weight):
         if node1 in self.graph and node2 in self.graph[node1]:
             self.graph[node1][node2] = new_weight
+        if node2 in self.graph and node1 in self.graph[node2]:
+            self.graph[node2][node1] = new_weight
 
     @staticmethod
     def generate_node_position():
@@ -132,3 +129,4 @@ class Graph:
 
     def __len__(self):
         return len(self.graph)
+
