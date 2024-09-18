@@ -4,11 +4,15 @@ const ctx = canvas.getContext('2d');
 let draggingNode = {};
 let dragOffset = { x: 0, y: 0 };
 let clickedNode = null;
+let isDragging = false;
 
 let currentMode = null;
 
 let startNode = '1';
 let stopNode = null;
+
+let nodeFrom = null;
+let nodeTo = null;
 
 let shortestPath = [];
 
@@ -127,21 +131,44 @@ canvas.addEventListener('click',event => {
             logEvent("Point start.")
             startNode = clickedNode;
             fetchHighlightPath();
+            currentMode = null;
             break;
         case 'pointStop':
             logEvent("Point stop.")
             stopNode = clickedNode;
             fetchHighlightPath();
+            currentMode = null;
             break;
+
         case 'deleteNode':
             if (clickedNode) {
                 const confirmRemove = confirm(`Do you want to remove node ${clickedNode}?`);
                 if (confirmRemove) deleteNode(clickedNode);
             }
+            currentMode = null;
+            break;
+
+        case 'addEdge':
+            if (clickedNode) {
+                if (!nodeFrom){
+                    nodeFrom = clickedNode;
+                    logEvent(`First node selected: ${clickedNode}`);
+
+                } else if (!nodeTo) {
+                    nodeTo = clickedNode;
+                    logEvent(`Second node selected: ${clickedNode}`);
+                    const weight = prompt('Enter edge weight:', '1');
+                    if (weight) {
+                        addEdge(nodeFrom, nodeTo, parseInt(weight));
+                        nodeFrom = null;
+                        nodeTo = null;
+                        currentMode = null;
+                    }
+                }
+
+            }
             break;
     }
-
-    currentMode = null;
 });
 
 canvas.addEventListener('mousedown', (event) => {
@@ -158,8 +185,10 @@ canvas.addEventListener('mousedown', (event) => {
 
 canvas.addEventListener('mousemove', (event) => {
     if (draggingNode !== {} && draggingNode) {
+        isDragging = true;
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
+
         draggingNode.x = mouseX - dragOffset.x;
         draggingNode.y = mouseY - dragOffset.y;
         drawGraph();
@@ -167,8 +196,9 @@ canvas.addEventListener('mousemove', (event) => {
 });
 
 canvas.addEventListener('mouseup', () => {
-    if (clickedNode) {
-         saveNodePosition(clickedNode, draggingNode.x, draggingNode.y)
+    if (isDragging) {
+        isDragging = false;
+        saveNodePosition(clickedNode, draggingNode.x, draggingNode.y)
     }
     draggingNode = null;
 });

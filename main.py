@@ -44,19 +44,19 @@ def add_node():
 
 @app.route('/edge', methods=['POST'])
 def add_edge():
-    node1 = request.json.get('node1')
-    node2 = request.json.get('node2')
+    node_from = request.json.get('nodeFrom')
+    node_to = request.json.get('nodeTo')
     weight = request.json.get('weight')
 
     # Validate the input
-    if not all([node1, node2, weight]):
-        return jsonify({'error': 'node1, node2, and weight must be provided'}), 400
+    if not all([node_from, node_to, weight]):
+        return jsonify({'error': 'node_from, node_to, and weight must be provided'}), 400
 
-    if node1 not in G.graph or node2 not in G.graph:
+    if node_from not in G.graph or node_to not in G.graph:
         return jsonify({'error': 'Both nodes must exist in the graph'}), 400
 
-    G.add_edge(node1, node2, weight)
-    return jsonify({'message': f'Edge added between {node1} and {node2} with weight {weight}', 'graph': G.graph})
+    G.add_edge(node_from, node_to, weight)
+    return jsonify({'message': f'Edge added between {node_from} and {node_to} with weight {weight}', 'graph': G.graph})
 
 
 @app.route('/node', methods=['DELETE'])
@@ -73,14 +73,14 @@ def delete_node():
 
 @app.route('/edge', methods=['DELETE'])
 def delete_edge():
-    node1 = request.json.get('node1')
-    node2 = request.json.get('node2')
+    node_from = request.json.get('node_from')
+    node_to = request.json.get('node_to')
 
-    if node1 not in G.graph or node2 not in G.graph[node1]:
-        return jsonify({'error': f'Edge from {node1} to {node2} does not exist'}), 400
+    if node_from not in G.graph or node_to not in G.graph[node_from]:
+        return jsonify({'error': f'Edge from {node_from} to {node_to} does not exist'}), 400
 
-    G.delete_edge(node1, node2)
-    return jsonify({'message': f'Edge from {node1} to {node2} deleted successfully', 'graph': G.graph})
+    G.delete_edge(node_from, node_to)
+    return jsonify({'message': f'Edge from {node_from} to {node_to} deleted successfully', 'graph': G.graph})
 
 
 @app.route('/position', methods=['POST'])

@@ -132,24 +132,3 @@ class Graph:
 
     def __len__(self):
         return len(self.graph)
-
-
-# Example Usage
-graph = {
-   "1": {"2": 7, "3": 1, "4": 2},
-   "2": {"1": 7, "3": 3, "5": 8},
-   "3": {"2": 3, "5": 2, "4": 6},
-   "4": {"2": 6, "5": 7},
-   "5": {"1": 1, "2": 8, "3": 2, "4": 7},
-}
-
-G = Graph(graph)
-
-# Удаление узла "3"
-G.delete_node("3")
-print("Graph after deleting node 3:", G.graph)
-print("Missing nodes:", G.missing_nodes)
-
-# Добавление нового узла - должен стать "3"
-G.add_node()
-print("Graph after adding a new node (should be '3'):", G.graph)

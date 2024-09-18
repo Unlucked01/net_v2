@@ -25,6 +25,10 @@ document.getElementById('delete-node').addEventListener('click', () => {
     setMode('deleteNode');
 });
 
+document.getElementById('add-edge').addEventListener('click', () => {
+    setMode('addEdge')
+})
+
 document.getElementById('point-start').addEventListener('click', () => {
     setMode('pointStart');
 });

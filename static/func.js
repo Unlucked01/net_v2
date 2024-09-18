@@ -30,6 +30,22 @@ function deleteNode(node){
     });
 }
 
+function addEdge(nodeFrom, nodeTo, weight){
+    fetch('/edge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({nodeFrom: nodeFrom, nodeTo: nodeTo, weight: weight})
+    })
+    .then(response => response.json())
+    .then(data => {
+        fetchGraph();
+        logEvent(data.message);
+    })
+    .catch(error => {
+        logEvent(`Error adding edge: ${error}`);
+    });
+}
+
 function saveNodePosition(node, x, y) {
     fetch('/position', {
         method: 'POST',
