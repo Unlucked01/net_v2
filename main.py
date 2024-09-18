@@ -6,7 +6,7 @@ app = Flask(__name__)
 G = Graph({
    "1": {"2": 7, "3": 1, "4": 2},
    "2": {"1": 7, "3": 3, "5": 8},
-   "3": {"2": 3, "5": 2, "4": 6},
+   "3": {"1": 1, "2": 3, "5": 2, "4": 6},
    "4": {"2": 6, "5": 7},
    "5": {"1": 1, "2": 8, "3": 2, "4": 7},
 })
@@ -27,24 +27,19 @@ def shortest_path():
     source = request.args.get('source')
     target = request.args.get('target')
 
-    if source not in G.graph or target not in G.graph:
-        return jsonify({'error': 'Source or target node does not exist'}), 400
-
     path = G.shortest_path(source, target)
-    return jsonify({'path': path})
+    if path is not None:
+        return jsonify({'path': path})
+    else:
+        return jsonify({'error': 'no path found'}), 400
 
 
 @app.route('/node', methods=['POST'])
 def add_node():
-    new_node = request.json.get('node')
-    if not new_node:
-        new_node = str(len(G) + 1)
-
-    if new_node in G.graph:
-        return jsonify({'error': f'Node {new_node} already exists'}), 400
-
-    G.add_node(new_node)
-    return jsonify({'message': f'Node {new_node} added successfully'})
+    if G.add_node():
+        return jsonify({'message': f'Node added successfully'})
+    else:
+        return jsonify({'error': 'Node already exists'}), 400
 
 
 @app.route('/edge', methods=['POST'])
@@ -93,6 +88,7 @@ def update_position():
     node = request.json.get('node')
     x = request.json.get('x')
     y = request.json.get('y')
+
     if not all([node, x, y]):
         return jsonify({'error': 'node, x, and y must be provided'}), 400
 

@@ -5,28 +5,12 @@ class Graph:
     def __init__(self, graph: dict):
         self.graph = {}
         self.positions = {}
+        self.missing_nodes = []
 
         for node, edges in graph.items():
             self.add_node(node)
             for neighbor, weight in edges.items():
                 self.add_edge(node, neighbor, weight)
-
-    def renumber_nodes(self):
-        sorted_nodes = sorted(self.graph.keys(), key=int)
-        mapping = {old: str(new) for new, old in enumerate(sorted_nodes, 1)}
-        new_graph = {}
-
-        for old_node, edges in self.graph.items():
-            new_node = mapping[old_node]
-            new_graph[new_node] = {mapping[neighbor]: weight for neighbor, weight in edges.items()}
-
-        new_positions = {}
-        for old_node, coords in self.positions.items():
-            new_node = mapping[old_node]
-            new_positions[new_node] = coords
-
-        self.graph = new_graph
-        self.positions = new_positions
 
     def shortest_distances(self, source: str):
         distances = {node: float("inf") for node in self.graph}
@@ -58,6 +42,9 @@ class Graph:
         return distances, predecessors
 
     def shortest_path(self, source: str, target: str):
+        if source not in self.graph and target not in self.graph:
+            return None
+
         _, predecessors = self.shortest_distances(source)
 
         path = []
@@ -74,19 +61,37 @@ class Graph:
         self.add_node(node1)
         self.graph[node1][node2] = weight
 
-    def add_node(self, node):
+    def add_node(self, node=None):
+        """
+        Добавление нового узла. Если задано `node`, то добавляется узел с этим идентификатором.
+        Если узел не задан, то используется недостающий номер, если он есть.
+        """
+        if not node:
+            if self.missing_nodes:
+                node = str(min(self.missing_nodes))
+                self.missing_nodes.remove(int(node))
+            else:
+                node = str(len(self.graph) + 1)
+
         if node not in self.graph:
             self.graph[node] = {}
             self.positions[node] = self.generate_node_position()
+            return True
+        else:
+            return False
 
     def delete_node(self, node):
+        """
+        Удаление узла из графа. Номер удаленного узла добавляется в список недостающих номеров.
+        """
         if node in self.graph:
             del self.graph[node]
             del self.positions[node]
             for n in self.graph:
                 if node in self.graph[n]:
                     del self.graph[n][node]
-        self.renumber_nodes()
+            self.missing_nodes.append(int(node))
+            self.missing_nodes.sort()
 
     def delete_edge(self, node1, node2):
         if node1 in self.graph and node2 in self.graph[node1]:
@@ -140,10 +145,11 @@ graph = {
 
 G = Graph(graph)
 
-# G.add_node("6")
-# print("Graph after adding node 6:")
-# print(G.graph)
-#
-# G.delete_node("1")
-# print("Graph after deleting node 1:")
-# print(G.graph)
+# Удаление узла "3"
+G.delete_node("3")
+print("Graph after deleting node 3:", G.graph)
+print("Missing nodes:", G.missing_nodes)
+
+# Добавление нового узла - должен стать "3"
+G.add_node()
+print("Graph after adding a new node (should be '3'):", G.graph)
