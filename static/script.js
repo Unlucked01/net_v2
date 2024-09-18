@@ -57,11 +57,21 @@ function drawGraph() {
 
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 20, 0, 2 * Math.PI);
+
+        if (node === startNode) {
+            ctx.strokeStyle = 'green';
+            ctx.lineWidth = 10;
+        } else if (node === stopNode) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 10;
+        } else {
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 4;
+        }
+
+        ctx.stroke();
         ctx.fillStyle = 'blue';
         ctx.fill();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.stroke();
 
         ctx.font = 'bold 20px Arial';
         ctx.fillStyle = 'white';
@@ -128,6 +138,16 @@ canvas.addEventListener('click',event => {
             }
             currentMode = null;
             break;
+
+        case 'editEdge':
+            if (clickedEdge) {
+                const weight = prompt('Enter new edge weight:', '1');
+                if (weight) {
+                    editEdge(clickedEdge.nodeFrom, clickedEdge.nodeTo, parseInt(weight));
+                }
+            }
+            currentMode = null;
+            break;
     }
 });
 
@@ -164,6 +184,3 @@ canvas.addEventListener('mouseup', () => {
 });
 
 
-function setMode(mode) {
-    currentMode = mode;
-}

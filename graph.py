@@ -95,8 +95,11 @@ class Graph:
     def edit_edge(self, node1, node2, new_weight):
         if node1 in self.graph and node2 in self.graph[node1]:
             self.graph[node1][node2] = new_weight
-        if node2 in self.graph and node1 in self.graph[node2]:
-            self.graph[node2][node1] = new_weight
+            if node2 in self.graph and node1 in self.graph[node2]:
+                self.graph[node2][node1] = new_weight
+            return True
+
+        return False
 
     @staticmethod
     def generate_node_position():

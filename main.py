@@ -48,7 +48,6 @@ def add_edge():
     node_to = request.json.get('nodeTo')
     weight = request.json.get('weight')
 
-    # Validate the input
     if not all([node_from, node_to, weight]):
         return jsonify({'error': 'node_from, node_to, and weight must be provided'}), 400
 
@@ -67,7 +66,6 @@ def delete_node():
         return jsonify({'error': f'Node {node} does not exist'}), 400
 
     G.delete_node(node)
-    print(G.graph)
     return jsonify({'message': f'Node {node} deleted successfully'})
 
 
@@ -81,6 +79,24 @@ def delete_edge():
 
     G.delete_edge(node_from, node_to)
     return jsonify({'message': f'Edge from {node_from} to {node_to} deleted successfully', 'graph': G.graph})
+
+
+@app.route('/edge', methods=['PUT'])
+def edit_edge():
+    node_from = request.json.get('nodeFrom')
+    node_to = request.json.get('nodeTo')
+    weight = request.json.get('weight')
+
+    if not all([node_from, node_to, weight]):
+        return jsonify({'error': 'node_from, node_to, and weight must be provided'}), 400
+
+    if node_from not in G.graph or node_to not in G.graph[node_from]:
+        return jsonify({'error': 'Both nodes must exist in the graph'}), 400
+
+    if G.edit_edge(node_from, node_to, weight):
+        return jsonify({'message': f'Edge edited successfully'})
+    else:
+        return jsonify({'error': 'Edge cannot be edited'}), 400
 
 
 @app.route('/position', methods=['POST'])

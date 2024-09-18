@@ -1,5 +1,14 @@
 window.onload = fetchGraph;
 
+function logEvent(message) {
+    logArea.value += `${message}\n`;
+    logArea.scrollTop = logArea.scrollHeight;
+}
+
+function setMode(mode) {
+    currentMode = mode;
+}
+
 function getClickedNode(x, y) {
     for (const node in positions) {
         const pos = positions[node];
@@ -57,10 +66,6 @@ function pointToLineDistance(x, y, x1, y1, x2, y2) {
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function logEvent(message) {
-    logArea.value += `${message}\n`;
-    logArea.scrollTop = logArea.scrollHeight;
-}
 
 function fetchGraph(){
     fetch('/graph')
@@ -150,6 +155,22 @@ function deleteEdge(nodeFrom, nodeTo) {
     })
     .catch(error => {
         logEvent(`Error deleting edge: ${error}`);
+    });
+}
+
+function editEdge(nodeFrom, nodeTo, weight) {
+    fetch('/edge', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({nodeFrom: nodeFrom, nodeTo: nodeTo, weight: weight})
+    })
+    .then(response => response.json())
+    .then(data => {
+        fetchGraph();
+        logEvent(data.message);
+    })
+    .catch(error => {
+        logEvent(`Error editing edge: ${error}`);
     });
 }
 

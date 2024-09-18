@@ -33,6 +33,10 @@ document.getElementById('delete-edge').addEventListener('click', () => {
     setMode('deleteEdge');
 })
 
+document.getElementById('edit-edge').addEventListener('click', () => {
+    setMode('editEdge')
+})
+
 document.getElementById('point-start').addEventListener('click', () => {
     setMode('pointStart');
 });
