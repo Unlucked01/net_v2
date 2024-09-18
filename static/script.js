@@ -3,8 +3,8 @@ const ctx = canvas.getContext('2d');
 
 let draggingNode = {};
 let dragOffset = { x: 0, y: 0 };
+let initialNodePosition = { x: 0, y: 0 };
 let clickedNode = null;
-let isDragging = false;
 
 let currentMode = null;
 
@@ -21,8 +21,6 @@ let positions = {};
 
 const logArea = document.getElementById('log');
 
-
-// Функция для рисования графа
 function drawGraph() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -91,6 +89,7 @@ canvas.addEventListener('click',event => {
     switch (currentMode) {
         case 'pointStart':
             logEvent("Point start.")
+            if (startNode !== clickedNode && stopNode !== startNode) alert('Start and Stop node must be different!')
             startNode = clickedNode;
             fetchHighlightPath();
             currentMode = null;
@@ -157,10 +156,12 @@ canvas.addEventListener('mousedown', (event) => {
     clickedNode = getClickedNode(mouseX, mouseY);
 
     if (clickedNode) {
-        isDragging = true;
         draggingNode = positions[clickedNode];
         dragOffset.x = mouseX - draggingNode.x;
         dragOffset.y = mouseY - draggingNode.y;
+
+        initialNodePosition.x = draggingNode.x;
+        initialNodePosition.y = draggingNode.y;
     }
 });
 
@@ -168,7 +169,6 @@ canvas.addEventListener('mousemove', (event) => {
     if (draggingNode !== {} && draggingNode) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
-
         draggingNode.x = mouseX - dragOffset.x;
         draggingNode.y = mouseY - dragOffset.y;
         drawGraph();
@@ -176,9 +176,8 @@ canvas.addEventListener('mousemove', (event) => {
 });
 
 canvas.addEventListener('mouseup', () => {
-    if (isDragging) {
-        isDragging = false;
-        saveNodePosition(clickedNode, draggingNode.x, draggingNode.y)
+    if (draggingNode.x !== initialNodePosition.x || draggingNode.y !== initialNodePosition.y) {
+         saveNodePosition(clickedNode, draggingNode.x, draggingNode.y)
     }
     draggingNode = null;
 });
