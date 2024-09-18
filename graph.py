@@ -1,28 +1,48 @@
-from heapq import heapify, heappop, heappush
+from heapq import heappop, heappush, heapify
+
 
 class Graph:
-    def __init__(self, graph: dict = {}):
-        self.graph = graph  # A dictionary for the adjacency list
+    def __init__(self, graph: dict):
+        self.graph = {}
+        self.positions = {}
+
+        for node, edges in graph.items():
+            self.add_node(node)
+            for neighbor, weight in edges.items():
+                self.add_edge(node, neighbor, weight)
+
+    def renumber_nodes(self):
+        sorted_nodes = sorted(self.graph.keys(), key=int)
+        mapping = {old: str(new) for new, old in enumerate(sorted_nodes, 1)}
+        new_graph = {}
+
+        for old_node, edges in self.graph.items():
+            new_node = mapping[old_node]
+            new_graph[new_node] = {mapping[neighbor]: weight for neighbor, weight in edges.items()}
+
+        new_positions = {}
+        for old_node, coords in self.positions.items():
+            new_node = mapping[old_node]
+            new_positions[new_node] = coords
+
+        self.graph = new_graph
+        self.positions = new_positions
 
     def shortest_distances(self, source: str):
-        # Initialize the values of all nodes with infinity
         distances = {node: float("inf") for node in self.graph}
-        distances[source] = 0  # Set the source value to 0
-        # Initialize a priority queue
+        distances[source] = 0
         pq = [(0, source)]
         heapify(pq)
 
-        # Create a set to hold visited nodes
         visited = set()
 
-        while pq:  # While the priority queue isn't empty
+        while pq:
             current_distance, current_node = heappop(pq)
             if current_node in visited:
                 continue
             visited.add(current_node)
 
             for neighbor, weight in self.graph[current_node].items():
-                # Calculate the distance from current_node to the neighbor
                 tentative_distance = current_distance + weight
                 if tentative_distance < distances[neighbor]:
                     distances[neighbor] = tentative_distance
@@ -38,48 +58,92 @@ class Graph:
         return distances, predecessors
 
     def shortest_path(self, source: str, target: str):
-        # Generate the predecessors dict
         _, predecessors = self.shortest_distances(source)
 
         path = []
         current_node = target
 
-        # Backtrack from the target node using predecessors
         while current_node:
             path.append(current_node)
             current_node = predecessors[current_node]
 
-        # Reverse the path and return it
         path.reverse()
-
         return path
 
     def add_edge(self, node1, node2, weight):
         self.add_node(node1)
         self.graph[node1][node2] = weight
 
-    # Add a new node
     def add_node(self, node):
         if node not in self.graph:
             self.graph[node] = {}
+            self.positions[node] = self.generate_node_position()
 
-    # Delete a node and all its edges
     def delete_node(self, node):
         if node in self.graph:
             del self.graph[node]
+            del self.positions[node]
             for n in self.graph:
                 if node in self.graph[n]:
                     del self.graph[n][node]
+        self.renumber_nodes()
 
-    # Delete an edge between two nodes
     def delete_edge(self, node1, node2):
         if node1 in self.graph and node2 in self.graph[node1]:
             del self.graph[node1][node2]
 
-    # Edit an existing edge
     def edit_edge(self, node1, node2, new_weight):
         if node1 in self.graph and node2 in self.graph[node1]:
             self.graph[node1][node2] = new_weight
 
+    @staticmethod
+    def generate_node_position():
+        import random
+        return {'x': random.randint(50, 550), 'y': random.randint(50, 350)}
+
+    def update_position(self, node, x, y):
+        if node in self.graph:
+            self.positions[node] = {'x': x, 'y': y}
+        else:
+            raise ValueError(f"Node {node} does not exist in the graph")
+
+    def incident_matrix(self):
+        nodes = list(self.graph.keys())
+        edges = []
+
+        for node_from, neighbors in self.graph.items():
+            for node_to in neighbors:
+                edges.append((node_from, node_to))
+
+        matrix = [[0] * len(nodes) for _ in range(len(edges))]
+
+        for i, (node_from, node_to) in enumerate(edges):
+            from_idx = nodes.index(node_from)
+            to_idx = nodes.index(node_to)
+            matrix[i][from_idx] = 1
+            matrix[i][to_idx] = -1
+
+        return matrix
+
     def __len__(self):
         return len(self.graph)
+
+
+# Example Usage
+graph = {
+   "1": {"2": 7, "3": 1, "4": 2},
+   "2": {"1": 7, "3": 3, "5": 8},
+   "3": {"2": 3, "5": 2, "4": 6},
+   "4": {"2": 6, "5": 7},
+   "5": {"1": 1, "2": 8, "3": 2, "4": 7},
+}
+
+G = Graph(graph)
+
+# G.add_node("6")
+# print("Graph after adding node 6:")
+# print(G.graph)
+#
+# G.delete_node("1")
+# print("Graph after deleting node 1:")
+# print(G.graph)

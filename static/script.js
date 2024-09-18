@@ -1,9 +1,9 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-const positions = {};
 let draggingNode = {};
 let dragOffset = { x: 0, y: 0 };
+let clickedNode = null;
 
 let currentMode = null;
 
@@ -13,15 +13,7 @@ let stopNode = null;
 let shortestPath = [];
 
 let graph = {};
-
-// Функция для получения случайного положения вершины
-function getRandomPosition(maxX, maxY) {
-    const padding = 50; // чтобы вершины не располагались слишком близко к краю
-    return {
-        x: Math.random() * (maxX - padding * 2) + padding,
-        y: Math.random() * (maxY - padding * 2) + padding
-    };
-}
+let positions = {};
 
 const logArea = document.getElementById('log');
 
@@ -84,15 +76,11 @@ function drawGraph() {
 }
 
 function fetchGraph(){
-    fetch('/get-graph')
+    fetch('/graph')
         .then(response => response.json())
         .then(graphData => {
-            for (const node in graphData) {
-                if (!positions[node]){
-                    positions[node] = getRandomPosition(canvas.width, canvas.height);
-                }
-            }
-            graph = graphData;
+            graph = graphData.graph;
+            positions = graphData.positions;
             console.log(graph);
             drawGraph();
             fetchHighlightPath();
@@ -104,15 +92,14 @@ function fetchHighlightPath(){
     if (startNode === null || stopNode === null) {
         return
     }
-    fetch(`/shortest-path?source=${startNode}&target=${stopNode}`)
+    fetch(`/path?source=${startNode}&target=${stopNode}`)
         .then(response => response.json())
         .then(data => {
             shortestPath = data.path;
             console.log('Shortest path:', shortestPath);
-            // Перерисовываем граф, выделив кратчайший путь
             drawGraph();
         })
-        .catch(error => console.error('Error highlighting graph', startNode, endNode));
+        .catch(error => console.error('Error highlighting graph', startNode, stopNode));
 }
 
 
@@ -137,21 +124,30 @@ canvas.addEventListener('click',event => {
 
     switch (currentMode) {
         case 'pointStart':
+            logEvent("Point start.")
             startNode = clickedNode;
             fetchHighlightPath();
             break;
         case 'pointStop':
+            logEvent("Point stop.")
             stopNode = clickedNode;
             fetchHighlightPath();
             break;
+        case 'deleteNode':
+            if (clickedNode) {
+                const confirmRemove = confirm(`Do you want to remove node ${clickedNode}?`);
+                if (confirmRemove) deleteNode(clickedNode);
+            }
+            break;
     }
+
     currentMode = null;
 });
 
 canvas.addEventListener('mousedown', (event) => {
     const mouseX = event.offsetX;
     const mouseY = event.offsetY;
-    const clickedNode = getClickedNode(mouseX, mouseY);
+    clickedNode = getClickedNode(mouseX, mouseY);
 
     if (clickedNode) {
         draggingNode = positions[clickedNode];
@@ -161,17 +157,19 @@ canvas.addEventListener('mousedown', (event) => {
 });
 
 canvas.addEventListener('mousemove', (event) => {
-    if (draggingNode) {
+    if (draggingNode !== {} && draggingNode) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
-        const pos = draggingNode;
-        pos.x = mouseX - dragOffset.x;
-        pos.y = mouseY - dragOffset.x;
+        draggingNode.x = mouseX - dragOffset.x;
+        draggingNode.y = mouseY - dragOffset.y;
         drawGraph();
     }
 });
 
 canvas.addEventListener('mouseup', () => {
+    if (clickedNode) {
+         saveNodePosition(clickedNode, draggingNode.x, draggingNode.y)
+    }
     draggingNode = null;
 });
 
@@ -180,5 +178,4 @@ function setMode(mode) {
     currentMode = mode;
 }
 
-
-window.onload = fetchGraph
+window.onload = fetchGraph;

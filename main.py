@@ -3,15 +3,13 @@ from graph import Graph
 
 app = Flask(__name__)
 
-graph = {
+G = Graph({
    "1": {"2": 7, "3": 1, "4": 2},
    "2": {"1": 7, "3": 3, "5": 8},
    "3": {"2": 3, "5": 2, "4": 6},
    "4": {"2": 6, "5": 7},
    "5": {"1": 1, "2": 8, "3": 2, "4": 7},
-}
-
-G = Graph(graph)
+})
 
 
 @app.route('/')
@@ -19,12 +17,12 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/get-graph', methods=['GET'])
+@app.route('/graph', methods=['GET'])
 def get_graph():
-    return jsonify(graph)
+    return jsonify({'graph': G.graph, 'positions': G.positions})
 
 
-@app.route('/shortest-path', methods=['GET'])
+@app.route('/path', methods=['GET'])
 def shortest_path():
     source = request.args.get('source')
     target = request.args.get('target')
@@ -36,7 +34,7 @@ def shortest_path():
     return jsonify({'path': path})
 
 
-@app.route('/add-node', methods=['POST'])
+@app.route('/node', methods=['POST'])
 def add_node():
     new_node = request.json.get('node')
     if not new_node:
@@ -49,7 +47,7 @@ def add_node():
     return jsonify({'message': f'Node {new_node} added successfully'})
 
 
-@app.route('/add-edge', methods=['POST'])
+@app.route('/edge', methods=['POST'])
 def add_edge():
     node1 = request.json.get('node1')
     node2 = request.json.get('node2')
@@ -66,7 +64,7 @@ def add_edge():
     return jsonify({'message': f'Edge added between {node1} and {node2} with weight {weight}', 'graph': G.graph})
 
 
-@app.route('/delete-node', methods=['DELETE'])
+@app.route('/node', methods=['DELETE'])
 def delete_node():
     node = request.json.get('node')
 
@@ -74,10 +72,11 @@ def delete_node():
         return jsonify({'error': f'Node {node} does not exist'}), 400
 
     G.delete_node(node)
+    print(G.graph)
     return jsonify({'message': f'Node {node} deleted successfully'})
 
 
-@app.route('/delete-edge', methods=['DELETE'])
+@app.route('/edge', methods=['DELETE'])
 def delete_edge():
     node1 = request.json.get('node1')
     node2 = request.json.get('node2')
@@ -87,6 +86,24 @@ def delete_edge():
 
     G.delete_edge(node1, node2)
     return jsonify({'message': f'Edge from {node1} to {node2} deleted successfully', 'graph': G.graph})
+
+
+@app.route('/position', methods=['POST'])
+def update_position():
+    node = request.json.get('node')
+    x = request.json.get('x')
+    y = request.json.get('y')
+    if not all([node, x, y]):
+        return jsonify({'error': 'node, x, and y must be provided'}), 400
+
+    if node not in G.graph:
+        return jsonify({'error': f'Node {node} does not exist'}), 400
+
+    try:
+        G.update_position(node, x, y)
+        return jsonify({'message': f'Position of node {node} updated successfully'})
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
 
 
 if __name__ == '__main__':
