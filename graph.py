@@ -26,8 +26,6 @@ class Graph:
                 continue
             visited.add(current_node)
 
-            print(self.graph[current_node].items())
-
             for neighbor, weight in self.graph[current_node].items():
                 tentative_distance = current_distance + weight
                 if tentative_distance < distances[neighbor]:
@@ -44,20 +42,21 @@ class Graph:
         return distances, predecessors
 
     def shortest_path(self, source: str, target: str):
-        if source not in self.graph and target not in self.graph:
-            return None
+        if source not in self.graph or target not in self.graph:
+            return None, float("inf")
 
-        _, predecessors = self.shortest_distances(source)
+        distances, predecessors = self.shortest_distances(source)
+
+        if distances[target] == float("inf"):
+            return None, float("inf")
 
         path = []
         current_node = target
-
         while current_node:
             path.append(current_node)
             current_node = predecessors[current_node]
-
         path.reverse()
-        return path
+        return path, distances[target]
 
     def add_edge(self, node1, node2, weight):
         self.add_node(node1)
@@ -91,14 +90,10 @@ class Graph:
     def delete_edge(self, node1, node2):
         if node1 in self.graph and node2 in self.graph[node1]:
             del self.graph[node1][node2]
-        if node2 in self.graph and node1 in self.graph[node2]:
-            del self.graph[node2][node1]
 
     def edit_edge(self, node1, node2, new_weight):
         if node1 in self.graph and node2 in self.graph[node1]:
             self.graph[node1][node2] = new_weight
-            if node2 in self.graph and node1 in self.graph[node2]:
-                self.graph[node2][node1] = new_weight
             return True
 
         return False

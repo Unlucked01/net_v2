@@ -92,7 +92,8 @@ function fetchHighlightPath(){
         .then(response => response.json())
         .then(data => {
             shortestPath = data.path;
-            console.log('Shortest path:', shortestPath);
+            distance = data.distance
+            logEvent(`Shortest path: ${shortestPath.join(' -> ')}.\nSummary weight: ${distance}`);
             drawGraph();
         })
         .catch(error => console.error('Error highlighting graph', startNode, stopNode));

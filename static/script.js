@@ -15,6 +15,7 @@ let nodeFrom = null;
 let nodeTo = null;
 
 let shortestPath = [];
+let distance = null;
 
 let graph = {};
 let positions = {};
@@ -24,38 +25,81 @@ const logArea = document.getElementById('log');
 function drawGraph() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    const offset = 10;  // Отступ для кривых линий
+    const weightOffset = 50;  // Смещение для отображения веса рёбер
+    const nodeRadius = 19;  // Радиус вершины
+
+    // Сначала рисуем рёбра и стрелки
     for (const nodeFrom in graph) {
         const fromPos = positions[nodeFrom];
         for (const nodeTo in graph[nodeFrom]) {
             const toPos = positions[nodeTo];
             const weight = graph[nodeFrom][nodeTo];
 
+            const hasReverseEdge = graph[nodeTo] && graph[nodeTo][nodeFrom] !== undefined;
+
             const isHighlighted = shortestPath.some((node, index) =>
-                (index < shortestPath.length - 1 &&
-                ((shortestPath[index] === nodeFrom && shortestPath[index + 1] === nodeTo) ||
-                (shortestPath[index] === nodeTo && shortestPath[index + 1] === nodeFrom)))
+                (index < shortestPath.length - 1 &&  (shortestPath[index] === nodeFrom && shortestPath[index + 1] === nodeTo))
             );
 
             ctx.beginPath();
-            ctx.moveTo(fromPos.x, fromPos.y);
-            ctx.lineTo(toPos.x, toPos.y);
+
+            const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x);
+
+            const toX = toPos.x - nodeRadius * Math.cos(angle);
+            const toY = toPos.y - nodeRadius * Math.sin(angle);
+
+            // Отображение веса
+            const midWeightX = (fromPos.x + toX) / 2 + (fromPos.y - toPos.y) / weightOffset;
+            const midWeightY = (fromPos.y + toY) / 2 + (toPos.x - fromPos.x) / weightOffset;
+
+            if (hasReverseEdge) {
+                const midX = (fromPos.x + toX) / 2;
+                const midY = (fromPos.y + toY) / 2;
+                const controlX = midX + (fromPos.y - toPos.y) / offset; // Отступ для закругления
+                const controlY = midY + (toPos.x - fromPos.x) / offset;
+
+                ctx.moveTo(fromPos.x, fromPos.y);
+                ctx.quadraticCurveTo(controlX, controlY, toX, toY);
+
+                ctx.font = '24px Arial';
+                ctx.fillStyle = 'black';
+                ctx.fillText(weight, midWeightX, midWeightY);
+            } else {
+                ctx.moveTo(fromPos.x, fromPos.y);
+                ctx.lineTo(toX, toY);
+
+                ctx.font = '24px Arial';
+                ctx.fillStyle = 'black';
+                ctx.fillText(weight, midWeightX, midWeightY);
+            }
+
             ctx.strokeStyle = isHighlighted ? 'red' : 'gray';
             ctx.lineWidth = isHighlighted ? 4 : 3;
             ctx.stroke();
 
-            const midX = (fromPos.x + toPos.x) / 2;
-            const midY = (fromPos.y + toPos.y) / 2;
-            ctx.font = '24px Arial';
-            ctx.fillStyle = 'black';
-            ctx.fillText(weight, midX + 10, midY);
+            const arrowSize = 15;
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - arrowSize * Math.cos(angle - Math.PI / 6),
+                toY - arrowSize * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                toX - arrowSize * Math.cos(angle + Math.PI / 6),
+                toY - arrowSize * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fillStyle = isHighlighted ? 'red' : 'gray';
+            ctx.fill();
         }
     }
+
     for (const node in positions) {
         const pos = positions[node];
 
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 20, 0, 2 * Math.PI);
-
+        ctx.arc(pos.x, pos.y, nodeRadius, 0, 2 * Math.PI);
         if (node === startNode) {
             ctx.strokeStyle = 'green';
             ctx.lineWidth = 10;
@@ -88,16 +132,16 @@ canvas.addEventListener('click',event => {
 
     switch (currentMode) {
         case 'pointStart':
-            logEvent("Point start.")
-            if (startNode !== clickedNode && stopNode !== startNode) alert('Start and Stop node must be different!')
+            logEvent(`Point start. Current start node: ${startNode}`)
             startNode = clickedNode;
-            fetchHighlightPath();
+            logEvent(`New start node: ${startNode}`)
+            fetchGraph();
             currentMode = null;
             break;
         case 'pointStop':
             logEvent("Point stop.")
             stopNode = clickedNode;
-            fetchHighlightPath();
+            fetchGraph();
             currentMode = null;
             break;
 
@@ -147,6 +191,7 @@ canvas.addEventListener('click',event => {
             }
             currentMode = null;
             break;
+
     }
 });
 
@@ -166,11 +211,12 @@ canvas.addEventListener('mousedown', (event) => {
 });
 
 canvas.addEventListener('mousemove', (event) => {
-    if (draggingNode !== {} && draggingNode) {
+    if (draggingNode !== {} && clickedNode) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
         draggingNode.x = mouseX - dragOffset.x;
         draggingNode.y = mouseY - dragOffset.y;
+
         drawGraph();
     }
 });
@@ -180,6 +226,7 @@ canvas.addEventListener('mouseup', () => {
          saveNodePosition(clickedNode, draggingNode.x, draggingNode.y)
     }
     draggingNode = null;
+    clickedNode = null;
 });
 
 

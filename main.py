@@ -4,11 +4,11 @@ from graph import Graph
 app = Flask(__name__)
 
 G = Graph({
-   "1": {"2": 7, "3": 1, "4": 2},
-   "2": {"1": 7, "3": 3, "5": 8},
-   "3": {"1": 1, "2": 3, "5": 2, "4": 6},
-   "4": {"2": 6, "5": 7},
-   "5": {"1": 1, "2": 8, "3": 2, "4": 7},
+    "1": {"3": 1},
+    "2": {"3": 3, "5": 1},
+    "3": {"2": 1, "4": 6, "5": 2},
+    "4": {"2": 6, "5": 7},
+    "5": {"1": 1, "2": 8, "4": 2}
 })
 
 
@@ -27,9 +27,9 @@ def shortest_path():
     source = request.args.get('source')
     target = request.args.get('target')
 
-    path = G.shortest_path(source, target)
-    if path is not None:
-        return jsonify({'path': path})
+    path, distance = G.shortest_path(source, target)
+    if path is not None and len(path) > 1:
+        return jsonify({'path': path, 'distance': distance})
     else:
         return jsonify({'error': 'no path found'}), 400
 
