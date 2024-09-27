@@ -1,3 +1,6 @@
+import time
+from heapq import heappop, heappush, heapify
+
 
 class Graph:
     def __init__(self, graph: dict):
@@ -10,11 +13,11 @@ class Graph:
             for neighbor, weight in edges.items():
                 self.add_edge(node, neighbor, weight)
 
-    def shortest_distances(self, source: str):
-        from heapq import heappop, heappush, heapify
-
+    def shortest_distances_dijkstra(self, source: str):
+        """Алгоритм Дейкстры для поиска кратчайших путей от одной вершины."""
         distances = {node: float("inf") for node in self.graph}
         distances[source] = 0
+        predecessors = {node: None for node in self.graph}
         pq = [(0, source)]
         heapify(pq)
 
@@ -30,33 +33,81 @@ class Graph:
                 tentative_distance = current_distance + weight
                 if tentative_distance < distances[neighbor]:
                     distances[neighbor] = tentative_distance
+                    predecessors[neighbor] = current_node  # Предыдущий узел для восстановления пути
                     heappush(pq, (tentative_distance, neighbor))
 
-        predecessors = {node: None for node in self.graph}
+        return distances, predecessors  # Возвращаем расстояния и предшественников
 
-        for node, distance in distances.items():
-            for neighbor, weight in self.graph[node].items():
-                if distances[neighbor] == distance + weight:
-                    predecessors[neighbor] = node
+    def all_pairs_dijkstra(self):
+        """n-кратное применение алгоритма Дейкстры для поиска кратчайших путей между всеми парами вершин."""
+        shortest_paths = {}
+        start_time = time.time()
 
-        return distances, predecessors
+        for node in self.graph:
+            distances, predecessors = self.shortest_distances_dijkstra(node)
+            for target, distance in distances.items():
+                if distance < float("inf"):
+                    path = self.reconstruct_path_dijkstra(node, target)
+                    if len(path) > 1:
+                        shortest_paths[(node, target)] = (path, distance)
 
-    def shortest_path(self, source: str, target: str):
-        if source not in self.graph or target not in self.graph:
-            return None, float("inf")
+        end_time = time.time()
+        dijkstra_time = end_time - start_time
+        return shortest_paths, dijkstra_time
 
-        distances, predecessors = self.shortest_distances(source)
-
-        if distances[target] == float("inf"):
-            return None, float("inf")
-
+    def reconstruct_path_dijkstra(self, source, target):
+        """Восстановление пути после работы алгоритма Дейкстры."""
+        distances, predecessors = self.shortest_distances_dijkstra(source)
         path = []
         current_node = target
-        while current_node:
+        while current_node is not None:
             path.append(current_node)
             current_node = predecessors[current_node]
-        path.reverse()
-        return path, distances[target]
+        path.reverse()  # Путь восстанавливается в обратном порядке
+        return path if distances[target] != float("inf") else None
+
+    def floyd_warshall(self):
+        """Алгоритм Флойда-Уоршалла для поиска кратчайших путей между всеми парами вершин."""
+        nodes = sorted(self.graph.keys(), key=int)
+        dist = {node: {other: float('inf') for other in nodes} for node in nodes}
+        next_node = {node: {other: None for other in nodes} for node in nodes}
+
+        for node in nodes:
+            dist[node][node] = 0
+            for neighbor, weight in self.graph[node].items():
+                dist[node][neighbor] = weight
+                next_node[node][neighbor] = neighbor
+
+        start_time = time.time()
+        for k in nodes:
+            for i in nodes:
+                for j in nodes:
+                    if dist[i][j] > dist[i][k] + dist[k][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+                        next_node[i][j] = next_node[i][k]
+        end_time = time.time()
+        floyd_time = end_time - start_time
+
+        shortest_paths = {}
+        for i in nodes:
+            for j in nodes:
+                if dist[i][j] < float('inf'):
+                    path = self.reconstruct_path_floyd(i, j, next_node)
+                    if path is not None and len(path) > 1:
+                        shortest_paths[(i, j)] = (path, dist[i][j])
+
+        return shortest_paths, floyd_time
+
+    @staticmethod
+    def reconstruct_path_floyd(source, target, next_node):
+        """Восстановление пути после работы алгоритма Флойда-Уоршалла."""
+        if next_node[source][target] is None:
+            return None
+        path = [source]
+        while source != target:
+            source = next_node[source][target]
+            path.append(source)
+        return path
 
     def add_edge(self, node1, node2, weight):
         self.add_node(node1)
@@ -120,3 +171,4 @@ class Graph:
                 matrix[i][j] = weight
 
         return matrix
+

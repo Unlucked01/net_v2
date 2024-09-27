@@ -44,3 +44,8 @@ document.getElementById('point-start').addEventListener('click', () => {
 document.getElementById('point-stop').addEventListener('click', () => {
    setMode('pointStop');
 });
+
+document.getElementById('start-comp').addEventListener('click', () => {
+   // setMode('startComparison');
+    fetchComparisonResults();
+});

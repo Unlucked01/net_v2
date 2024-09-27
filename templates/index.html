@@ -7,10 +7,23 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
+<div id="sub-container">
+    <div id="file-buttons">
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="file-input" name="file" accept=".txt">
+                <button type="submit">Upload</button>
+                <button id="download-graph">Download Graph</button>
+            </form>
+
+    </div>
+    <div id="log-container">
+        <textarea id="log" rows="2" readonly></textarea>
+    </div>
+</div>
 
 <div id="main-container">
         <div id="graph-area">
-            <canvas id="canvas" width="700" height="500"></canvas>
+            <canvas id="canvas" width="760" height="500"></canvas>
             <div id="context-menu">
                 <ul>
                     <li id="add-node">Add Node</li>
@@ -20,6 +33,7 @@
                     <li id="edit-edge">Edit Edge</li>
                     <li id="point-start">Point start node</li>
                     <li id="point-stop">Point stop node</li>
+                    <li id="start-comp">Start comparison</li>
                 </ul>
             </div>
         </div>
@@ -30,22 +44,18 @@
 
     </div>
 
-    <div id="log-container">
-        <h3>Graph Event Log:</h3>
-        <textarea id="log" rows="10" readonly></textarea>
-    </div>
-
-    <div id="file-buttons">
-        <!-- Upload form -->
-        <form id="upload-form" enctype="multipart/form-data">
-            <label for="file-input">Upload Graph:</label>
-            <input type="file" id="file-input" name="file" accept=".txt">
-            <button type="submit">Upload</button>
-        </form>
-
-        <!-- Download button -->
-        <button id="download-graph">Download Graph</button>
-    </div>
+<div id="comparison-container">
+    <table>
+        <tr>
+            <th>Dijkstra's Algorithm</th>
+            <th>Floyd-Warshall Algorithm</th>
+        </tr>
+        <tr>
+            <td><textarea id="dijkstra-results" rows="20" cols="90" readonly></textarea></td>
+            <td><textarea id="floyd-results" rows="20" cols="90" readonly></textarea></td>
+        </tr>
+    </table>
+</div>
 
     <script src="static/script.js"></script>
     <script src="static/menu.js"></script>
@@ -53,6 +63,7 @@
     <script src="static/matrix.js"></script>
 
     <script src="static/file_operations.js"></script>
+    <script src="static/comparison.js"></script>
 
 </body>
 </html>

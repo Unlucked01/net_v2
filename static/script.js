@@ -145,6 +145,12 @@ canvas.addEventListener('click',event => {
             currentMode = null;
             break;
 
+        case 'startComparison':
+            logEvent("Comparison Started")
+            fetchComparisonResults();
+            currentMode = null;
+            break;
+
         case 'deleteNode':
             if (clickedNode) {
                 const confirmRemove = confirm(`Do you want to remove node ${clickedNode}?`);

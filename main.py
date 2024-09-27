@@ -1,9 +1,10 @@
 from io import BytesIO
 
 from flask import Flask, render_template, jsonify, request, send_file
-from graph import Graph
+from graph import Graph, time
 
 app = Flask(__name__)
+
 
 G = Graph({
     "1": {"3": 1},
@@ -45,6 +46,39 @@ def upload_graph():
     return jsonify({'error': 'Invalid file format. Only .txt allowed'}), 400
 
 
+def convert_keys_to_strings(data):
+    new_data = {}
+    for key, value in data.items():
+        if isinstance(key, tuple):
+            new_key = ' -> '.join(key)
+        else:
+            new_key = key
+        new_data[new_key] = value
+    return new_data
+
+
+@app.route('/shortest_paths', methods=['GET'])
+def shortest_paths():
+    # Выполняем оба алгоритма
+    dijkstra_results, dijkstra_execution_time = G.all_pairs_dijkstra()
+    floyd_results, floyd_execution_time = G.floyd_warshall()
+
+    # Преобразуем кортежи ключей в строки
+    dijkstra_results = convert_keys_to_strings(dijkstra_results)
+    floyd_results = convert_keys_to_strings(floyd_results)
+
+    # Возвращаем JSON с результатами
+    return jsonify({
+        'dijkstra': {
+            'results': dijkstra_results,
+            'execution_time': round(dijkstra_execution_time, 6),
+        },
+        'floyd_warshall': {
+            'results': floyd_results,
+            'execution_time': round(floyd_execution_time, 6),
+        }
+    })
+
 @app.route('/download_graph', methods=['GET'])
 def download_graph():
     output = BytesIO()
@@ -59,7 +93,7 @@ def shortest_path():
     source = request.args.get('source')
     target = request.args.get('target')
 
-    path, distance = G.shortest_path(source, target)
+    path, distance = G.dijkstra(source, target)
     if path is not None and len(path) > 1:
         return jsonify({'path': path, 'distance': distance})
     else:

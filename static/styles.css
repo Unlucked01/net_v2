@@ -28,12 +28,10 @@ body {
 
 #log-container {
     width: 96%;
-    margin: 20px auto;
 }
 
 #log {
-    width: 100%;
-    height: 150px;
+    width: 96%;
     resize: none;
 }
 
@@ -42,6 +40,12 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     padding: 20px;
+}
+
+#sub-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
 }
 
 #graph-area {
