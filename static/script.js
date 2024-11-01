@@ -9,7 +9,7 @@ let clickedNode = null;
 let currentMode = null;
 
 let startNode = '1';
-let stopNode = null;
+let stopNode = '6';
 
 let nodeFrom = null;
 let nodeTo = null;
@@ -29,7 +29,6 @@ function drawGraph() {
     const weightOffset = 50;  // Смещение для отображения веса рёбер
     const nodeRadius = 19;  // Радиус вершины
 
-    // Сначала рисуем рёбра и стрелки
     for (const nodeFrom in graph) {
         const fromPos = positions[nodeFrom];
         for (const nodeTo in graph[nodeFrom]) {
@@ -49,14 +48,13 @@ function drawGraph() {
             const toX = toPos.x - nodeRadius * Math.cos(angle);
             const toY = toPos.y - nodeRadius * Math.sin(angle);
 
-            // Отображение веса
             const midWeightX = (fromPos.x + toX) / 2 + (fromPos.y - toPos.y) / weightOffset;
             const midWeightY = (fromPos.y + toY) / 2 + (toPos.x - fromPos.x) / weightOffset;
 
             if (hasReverseEdge) {
                 const midX = (fromPos.x + toX) / 2;
                 const midY = (fromPos.y + toY) / 2;
-                const controlX = midX + (fromPos.y - toPos.y) / offset; // Отступ для закругления
+                const controlX = midX + (fromPos.y - toPos.y) / offset;
                 const controlY = midY + (toPos.x - fromPos.x) / offset;
 
                 ctx.moveTo(fromPos.x, fromPos.y);
@@ -74,7 +72,7 @@ function drawGraph() {
                 ctx.fillText(weight, midWeightX, midWeightY);
             }
 
-            ctx.strokeStyle = isHighlighted ? 'red' : 'gray';
+            ctx.strokeStyle = isHighlighted ? 'blue' : 'gray';
             ctx.lineWidth = isHighlighted ? 4 : 3;
             ctx.stroke();
 
@@ -90,7 +88,7 @@ function drawGraph() {
                 toY - arrowSize * Math.sin(angle + Math.PI / 6)
             );
             ctx.closePath();
-            ctx.fillStyle = isHighlighted ? 'red' : 'gray';
+            ctx.fillStyle = isHighlighted ? 'blue' : 'gray';
             ctx.fill();
         }
     }
@@ -197,7 +195,6 @@ canvas.addEventListener('click',event => {
             }
             currentMode = null;
             break;
-
     }
 });
 

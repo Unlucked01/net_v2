@@ -46,6 +46,47 @@ document.getElementById('point-stop').addEventListener('click', () => {
 });
 
 document.getElementById('start-comp').addEventListener('click', () => {
-   // setMode('startComparison');
     fetchComparisonResults();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const startPackets = document.getElementById("start-packets");
+    const routingMenu = document.getElementById("routing-menu");
+
+
+    let selectedMethod = null;
+
+    startPackets.addEventListener("click", (e) => {
+        e.stopPropagation();
+        routingMenu.classList.toggle("visible");
+    });
+
+    document.addEventListener("click", () => {
+        if (routingMenu.classList.contains("visible")) {
+            routingMenu.classList.remove("visible");
+        }
+    });
+
+    routingMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        if (e.target.dataset.method) {
+            selectedMethod = e.target.dataset.method;
+            console.log("Selected routing method:", selectedMethod);
+
+            let packetNumber = +prompt("Ведите количество пакетов!")
+            let ttl = +prompt("Введите ttl:")
+
+            sendPacketByMethod([startNode], stopNode, packetNumber, ttl, selectedMethod);
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const clearTableButton = document.getElementById("clear-routing-table");
+
+    clearTableButton.addEventListener("click", () => {
+        document.querySelector("#routingTable tbody").innerHTML = "";
+        console.log("Routing table cleared.");
+    });
 });

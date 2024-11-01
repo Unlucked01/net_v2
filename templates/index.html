@@ -34,6 +34,14 @@
                     <li id="point-start">Point start node</li>
                     <li id="point-stop">Point stop node</li>
                     <li id="start-comp">Start comparison</li>
+                    <li id="start-packets">Start packets
+                       <ul id="routing-menu" class="hidden">
+                            <li data-method="random">Random</li>
+                            <li data-method="flood">Flood</li>
+                            <li data-method="experience">Experience</li>
+                            <li data-method="virtual">Virtual</li>
+                         </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -44,18 +52,34 @@
 
     </div>
 
-<div id="comparison-container">
-    <table>
-        <tr>
-            <th>Dijkstra's Algorithm</th>
-            <th>Floyd-Warshall Algorithm</th>
-        </tr>
-        <tr>
-            <td><textarea id="dijkstra-results" rows="20" cols="90" readonly></textarea></td>
-            <td><textarea id="floyd-results" rows="20" cols="90" readonly></textarea></td>
-        </tr>
+    <div id="routing-table-container">
+    <button id="clear-routing-table">Очистить</button>
+    <table id="routingTable">
+        <thead>
+            <tr>
+                <th>Узел</th>
+                <th>Количество переходов</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Данные таблицы будут здесь -->
+        </tbody>
     </table>
 </div>
+
+
+<!--    <div id="comparison-container">-->
+<!--        <table>-->
+<!--            <tr>-->
+<!--                <th>Dijkstra's Algorithm</th>-->
+<!--                <th>Floyd-Warshall Algorithm</th>-->
+<!--            </tr>-->
+<!--            <tr>-->
+<!--                <td><textarea id="dijkstra-results" rows="20" cols="90" readonly></textarea></td>-->
+<!--                <td><textarea id="floyd-results" rows="20" cols="90" readonly></textarea></td>-->
+<!--            </tr>-->
+<!--        </table>-->
+<!--    </div>-->
 
     <script src="static/script.js"></script>
     <script src="static/menu.js"></script>
@@ -65,5 +89,7 @@
     <script src="static/file_operations.js"></script>
     <script src="static/comparison.js"></script>
 
+    <script src="static/packet.js"></script>
+    <script src="static/packet_v2.js"></script>
 </body>
 </html>

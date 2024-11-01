@@ -1,17 +1,19 @@
 from io import BytesIO
 
 from flask import Flask, render_template, jsonify, request, send_file
-from graph import Graph, time
+from graph import Graph
+import random
 
 app = Flask(__name__)
 
 
 G = Graph({
-    "1": {"3": 1},
-    "2": {"3": 3, "5": 1},
-    "3": {"2": 1, "4": 6, "5": 2},
-    "4": {"2": 6, "5": 7},
-    "5": {"1": 1, "2": 8, "4": 2}
+    "1": {'2': 1},
+    "2": {'3': 2, '4': 3, '5': 4},
+    "3": {'6': 5},
+    "4": {'6': 3},
+    "5":  {'6': 6},
+    "6": {}
 })
 
 
@@ -59,15 +61,12 @@ def convert_keys_to_strings(data):
 
 @app.route('/shortest_paths', methods=['GET'])
 def shortest_paths():
-    # Выполняем оба алгоритма
     dijkstra_results, dijkstra_execution_time = G.all_pairs_dijkstra()
     floyd_results, floyd_execution_time = G.floyd_warshall()
 
-    # Преобразуем кортежи ключей в строки
     dijkstra_results = convert_keys_to_strings(dijkstra_results)
     floyd_results = convert_keys_to_strings(floyd_results)
 
-    # Возвращаем JSON с результатами
     return jsonify({
         'dijkstra': {
             'results': dijkstra_results,
@@ -78,6 +77,7 @@ def shortest_paths():
             'execution_time': round(floyd_execution_time, 6),
         }
     })
+
 
 @app.route('/download_graph', methods=['GET'])
 def download_graph():
@@ -93,7 +93,7 @@ def shortest_path():
     source = request.args.get('source')
     target = request.args.get('target')
 
-    path, distance = G.dijkstra(source, target)
+    path, distance = G.shortest_path(source, target)
     if path is not None and len(path) > 1:
         return jsonify({'path': path, 'distance': distance})
     else:
@@ -191,6 +191,107 @@ def update_position():
 def get_adjacency_matrix():
     matrix = G.adjacency_matrix()
     return jsonify({'adjacency_matrix': matrix})
+
+
+@app.route('/random_route', methods=['GET'])
+def random_route():
+    source = request.args.get('source')
+    target = request.args.get('target')
+    path = [source]
+    current = source
+
+    while current != target:
+        neighbors = list(G.graph[current].keys())
+        if not neighbors:
+            return jsonify({'error': 'no path found'}), 400
+        current = random.choice(neighbors)
+        path.append(current)
+
+    return jsonify({'path': path})
+
+
+@app.route('/flood_route', methods=['GET'])
+def flood_route():
+    source = request.args.get('source')
+    target = request.args.get('target')
+
+    def flood(current, visited):
+        if current == target:
+            return [[current]]
+        paths = []
+        for neighbor in G.graph[current].keys():
+            if neighbor not in visited:
+                new_paths = flood(neighbor, visited | {current})
+                for path in new_paths:
+                    paths.append([current] + path)
+        return paths
+
+    paths = flood(source, {source})
+    return jsonify({'paths': paths})
+
+
+routing_table = {}
+
+
+def calculate_experience_route(source, target):
+    from collections import deque
+
+    # Используем очередь для поиска в ширину (BFS)
+    queue = deque([(source, 0)])  # Очередь с кортежем (узел, расстояние от source)
+    visited = {source: 0}  # Словарь для отслеживания расстояний от source
+
+    while queue:
+        current_node, distance = queue.popleft()
+
+        # Обходим соседей текущего узла
+        for neighbor, weight in G.graph[current_node].items():
+            if neighbor not in visited:
+                visited[neighbor] = distance + 1
+                queue.append((neighbor, distance + 1))
+
+                # Обновляем таблицу маршрутизации
+                if current_node not in routing_table:
+                    routing_table[current_node] = {}
+                routing_table[current_node][neighbor] = distance + 1
+
+            # Если достигли целевой узел, можем остановиться
+            if neighbor == target:
+                return build_path(visited, source, target), routing_table
+
+    # Если путь не найден
+    return None, routing_table
+
+
+def build_path(visited, source, target):
+    if target not in visited:
+        return None  # Если нет пути к целевому узлу
+    path = []
+    current = target
+    while current != source:
+        path.append(current)
+        for node, dist in visited.items():
+            if dist == visited[current] - 1 and current in G.graph[node]:
+                current = node
+                break
+    path.append(source)
+    path.reverse()  # Путь восстановлен в обратном порядке
+    return path
+
+
+@app.route('/experience_route', methods=['GET'])
+def experience_route():
+    source = request.args.get('source')
+    target = request.args.get('target')
+
+    if not source or not target:
+        return jsonify({'error': 'Source and target parameters are required'}), 400
+
+    path, routing_table_data = calculate_experience_route(source, target)
+
+    if path is None:
+        return jsonify({'error': 'No path found'}), 400
+
+    return jsonify({'path': path, 'routing_table': routing_table_data})
 
 
 if __name__ == '__main__':

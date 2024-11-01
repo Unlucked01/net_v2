@@ -38,6 +38,25 @@ class Graph:
 
         return distances, predecessors  # Возвращаем расстояния и предшественников
 
+    def shortest_path(self, source: str, target: str):
+        """Нахождение кратчайшего пути и его стоимости между двумя узлами с использованием Дейкстры."""
+        if source not in self.graph or target not in self.graph:
+            return None, float('inf')
+
+        distances, predecessors = self.shortest_distances_dijkstra(source)
+
+        # Восстановление пути
+        path = []
+        current_node = target
+        while current_node is not None:
+            path.append(current_node)
+            current_node = predecessors[current_node]
+        path.reverse()
+
+        if not path or distances[target] == float("inf"):
+            return None, float('inf')
+        return path, distances[target]
+
     def all_pairs_dijkstra(self):
         """n-кратное применение алгоритма Дейкстры для поиска кратчайших путей между всеми парами вершин."""
         shortest_paths = {}

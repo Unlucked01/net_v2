@@ -1,7 +1,4 @@
-window.onload = function () {
-    fetchGraph();
-    fetchAdjacencyMatrix();
-};
+fetchGraph();
 
 function logEvent(message) {
     logArea.value += `${message}\n`;
