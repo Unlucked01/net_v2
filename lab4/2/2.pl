@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use IO::Socket;
+use IO::Socket::INET;
 
 
 my $host = shift || "127.0.0.1";

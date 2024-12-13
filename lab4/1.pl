@@ -4,7 +4,7 @@ use IO::Socket::INET;
 
 my $host = shift || '127.0.0.1';
 my $port = 80;
-my $resource = '/';
+my $resource = shift || '*';
 
 my $socket = IO::Socket::INET->new(
     PeerAddr => $host,
@@ -15,6 +15,7 @@ my $socket = IO::Socket::INET->new(
 my $request = "OPTIONS $resource HTTP/1.1\r\n".
               "Host: $host\r\n".
               "Connection: close\r\n\r\n";
+
 print $socket $request;
 
 my $response = '';
